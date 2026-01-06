@@ -328,11 +328,6 @@ This will update all users with the name John to have ``logged-in`` set to ``Tru
 If no matching user is found, a new document is inserted with both the name set
 and the ``logged-in`` flag.
 
-To use the ID of the document as matching criterion a :class:`~tinydb.table.Document`
-with ``doc_id`` is passed instead of a query:
-
->>> db.upsert(Document({'name': 'John', 'logged-in': True}, doc_id=12))
-
 Retrieving data
 ...............
 
@@ -506,14 +501,20 @@ Default Table
 
 TinyDB uses a table named ``_default`` as the default table. All operations
 on the database object (like ``db.insert(...)``) operate on this table.
-The name of this table can be modified by setting the ``default_table_name``
-class variable to modify the default table name for all instances:
+The name of this table can be modified by either passing ``default_table``
+to the ``TinyDB`` constructor or by setting the ``DEFAULT_TABLE`` class
+variable to modify the default table name for all instances:
 
 >>> #1: for a single instance only
->>> db = TinyDB(storage=SomeStorage)
->>> db.default_table_name = 'my-default'
+>>> TinyDB(storage=SomeStorage, default_table='my-default')
 >>> #2: for all instances
->>> TinyDB.default_table_name = 'my-default'
+>>> TinyDB.DEFAULT_TABLE = 'my-default'
+
+You also can modify the keyword arguments that are passed to the default
+table by setting ``TinyDB.DEFAULT_TABLE_KWARGS``. For example, you can
+disable the query cache for the default table by setting like this:
+
+>>> TinyDB.DEFAULT_TABLE_KWARGS = {'cache_size': 0}
 
 .. _query_caching:
 
@@ -529,10 +530,6 @@ to the ``table(...)`` function:
 
 .. hint:: You can set ``cache_size`` to ``None`` to make the cache unlimited in
    size. Also, you can set ``cache_size`` to 0 to disable it.
-
-.. hint:: It's not possible to open the same table multiple times with different
-   settings. After the first invocation, all the subsequent calls will return
-   the same table with the same settings as the first one.
 
 .. hint:: The TinyDB query cache doesn't check if the underlying storage
    that the database uses has been modified by an external process. In this
@@ -573,9 +570,9 @@ To use the in-memory storage, use:
     >>> db = TinyDB('db.json', sort_keys=True, indent=4, separators=(',', ': '))
 
 To modify the default storage for all ``TinyDB`` instances, set the
-``default_storage_class`` class variable:
+``DEFAULT_STORAGE`` class variable:
 
->>> TinyDB.default_storage_class = MemoryStorage
+>>> TinyDB.DEFAULT_STORAGE = MemoryStorage
 
 In case you need to access the storage instance directly, you can use the
 ``storage`` property of your TinyDB instance. This may be useful to call
